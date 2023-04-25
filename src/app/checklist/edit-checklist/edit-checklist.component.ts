@@ -5,7 +5,7 @@ import { combineLatest, map, tap } from 'rxjs';
 import { ChecklistStateService, IChecklist, IChecklistItem } from '../checklist-state.service';
 
 @Component({
-  standalone: true,
+  standalone: true,                           
   imports: [
     CommonModule,
     RouterModule
