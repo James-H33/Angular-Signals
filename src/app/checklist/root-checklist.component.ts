@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, computed, effect } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ChecklistStateService } from './checklist-state.service';
+import { ChecklistStateSignalService } from './checklist-state-signals.service';
 
 @Component({
   standalone: true,
@@ -27,7 +28,7 @@ import { ChecklistStateService } from './checklist-state.service';
 
 
       <div 
-        *ngFor="let checklist of checklists$ | async" class="root-checklist-checklist"
+        *ngFor="let checklist of checklists$" class="root-checklist-checklist"
         [routerLink]="[checklist.id]"
       >
         {{ checklist.name }}
@@ -36,10 +37,14 @@ import { ChecklistStateService } from './checklist-state.service';
   `
 })
 export class RootChecklistComponent {
-  public checklists$ = this.state.select((s) => s.checklists); 
+  public checklists$: any[] = [];
+
+  public updated = effect(() => {
+    this.checklists$ = this.state.state().checklists as any;
+  })
   
   constructor(
-    private state: ChecklistStateService
+    private state: ChecklistStateSignalService
   ) { }
 
   public add(inputRef: HTMLInputElement) {

@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, effect } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { combineLatest, map, tap } from 'rxjs';
-import { ChecklistStateService, IChecklist, IChecklistItem } from '../checklist-state.service';
+import { ChecklistStateSignalService } from '../checklist-state-signals.service';
+import { IChecklist, IChecklistItem } from '../checklist-state.service';
 
 @Component({
   standalone: true,                           
@@ -17,7 +17,7 @@ import { ChecklistStateService, IChecklist, IChecklistItem } from '../checklist-
       <span [routerLink]="['']">&#8617; Back</span>
     </div>
 
-    <div *ngIf="checklist$ | async as checklist" class="edit-checklist">
+    <div *ngIf="checklist" class="edit-checklist">
       <h2>{{checklist.name}}</h2>
 
       <div class="checklist-add">
@@ -58,21 +58,18 @@ import { ChecklistStateService, IChecklist, IChecklistItem } from '../checklist-
   `
 })
 export class EditChecklistComponent { 
-  private checklist?: IChecklist;
-  private checklists$ = this.state.select((s: any) => s.checklists);
-  private paramId$ = this.router.params.pipe(map((p: any) => p.id));
-  public checklist$ = combineLatest([this.checklists$, this.paramId$])
-    .pipe(
-      map(([lists, id]) => lists.find((c: any) => c.id === id)),
-      tap((checklist: any) => this.checklist = checklist)
-    )
+  public checklist?: IChecklist;
 
   public itemTrackBy = (i: number, item: IChecklistItem) =>  {
     return item.id;
   }
 
+  public updated = effect(() => {
+    this.checklist = this.state.state().checklists.find((c: any) => c.id === this.router.snapshot.params['id']);
+  })
+
   constructor(
-    private state: ChecklistStateService,
+    private state: ChecklistStateSignalService,
     private router: ActivatedRoute
   ) { }
 
